@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"  name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Galactic Encounter</title>
   <style>
@@ -415,10 +415,6 @@
         alert('Please select a contact method and enter the details!');
         return;
     }
-    // Blur input fields BEFORE sending email (important!)
-    const inputFields = document.querySelectorAll('input[type="text"], input[type="number"]');
-    inputFields.forEach(input => input.blur());
-
 
     emailjs.send('service_lnaepwf', 'template_5w50wk2', {
         contact_type: contactType.value,
@@ -521,17 +517,24 @@
         questionSectionDiv.style.display = 'none';
         welcomeMessage.style.display = 'none';
 
+
         // --- Show the Success Message Element ---
         const successMessageDiv = document.getElementById('success-message');
         successMessageDiv.style.display = 'block'; // Make the success message visible
 
+        console.log("Success message displayed.");
+
         // --- Hide the Success Message after a delay (e.g., 3 seconds) ---
         setTimeout(() => {
             successMessageDiv.style.display = 'none'; // Hide the success message again
+            console.log("Success message hidden after delay.");
         }, 60000); // Hide after 60 seconds
 
+        console.log("Inside setTimeout in transmitAnimation - after showing success message and setting hide timeout");
         // alert("Successful transmission!"); // Removed alert
     }, 2050);
+
+    console.log("transmitAnimation() function ending (Function exit)");
 }
     
     // Generate floating romantic hearts.
