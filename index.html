@@ -136,7 +136,7 @@
       height: 80px;
       background: radial-gradient(circle, #ff4500, #8b0000);
       bottom: 07%;
-      right: 27%;
+      right: 30%;
     }
     .orb.orb3 {
       width: 50px;
@@ -181,7 +181,7 @@
     }
     .orb.orb-left {
       background: radial-gradient(circle, #ff7f50, #ff4500);
-      left: 5%;
+      left: 1%;
       top: 0%;
       transform: translateY(-50%);
     }
@@ -407,47 +407,33 @@
       requestAnimationFrame(step);
     }
     
-    emailjs.init("UUxUCWkFJBKLGkOPf"); // Replace with your public API key
-
+    emailjs.init("UUxUCWkFJBKLGkOPf"); 
     function submitForm() {
-    console.log("submitForm() function called!");
     const contactType = document.querySelector('input[name="contact"]:checked');
     const contactDetail = document.getElementById('contact-detail').value;
-
-    console.log("Contact Type:", contactType);
-    console.log("Contact Detail:", contactDetail);
-
     if ( !contactDetail) {
-        console.log("Validation failed: Please select a contact method and enter details.");
         alert('Please select a contact method and enter the details!');
         return;
     }
+    // Blur input fields BEFORE sending email (important!)
+    const inputFields = document.querySelectorAll('input[type="text"], input[type="number"]');
+    inputFields.forEach(input => input.blur());
 
-    console.log("Validation passed. Proceeding with EmailJS.");
-    console.log("Contact Type Value:", contactType.value);
-
-    console.log("About to call emailjs.send..."); // ADD THIS LOG - Right before emailjs.send
 
     emailjs.send('service_lnaepwf', 'template_5w50wk2', {
         contact_type: contactType.value,
         contact_detail: contactDetail
     })
     .then(response => {
-        console.log("EmailJS .then() block entered"); // Keep this log
-        console.log("EmailJS Success:", response); // Keep this log
-        console.log("About to call transmitAnimation() from .then()"); // ADD THIS LOG - Before transmitAnimation()
+         // ADD THIS LOG - Before transmitAnimation()
         transmitAnimation();
-        console.log("transmitAnimation() called from .then()"); // ADD THIS LOG - After transmitAnimation()
-        console.log('Success (inside .then()):', response);
+       
     })
     .catch(error => {
-        console.log("EmailJS .catch() block entered"); // Keep this log
-        console.error("EmailJS Error:", error);
-        console.error('Error (inside .catch()):', error);
+        
         alert('Oops! Something went wrong. Please try again.');
     });
 
-    console.log("Function submitForm() execution continuing after emailjs.send..."); // ADD THIS LOG - After emailjs.send
 }
 
     
@@ -455,7 +441,6 @@
     // Launch a glowing star from the edge of the left orb ("U") to the edge of the right orb ("K"),
     // and create a dotted, glowing trail that follows a heart-shaped path.
     function transmitAnimation() {
-        console.log("transmitAnimation() function called! (Function entry)");
       const leftOrb = document.querySelector('.heart-left');
       const rightOrb = document.querySelector('.heart-right');
       const leftRect = leftOrb.getBoundingClientRect();
@@ -530,34 +515,23 @@
       animateStarAlongHeartPath(start, mid, cp_left, cp_right, end, 3000, star);
       
       setTimeout(() => {
-       // star.remove();
-      //  document.querySelectorAll('.trail-dot').forEach(dot => dot.remove());
-        console.log("Inside setTimeout in transmitAnimation - before showing success message");
 
         const questionSectionDiv = document.getElementById('question-section');
         const welcomeMessage = document.querySelector('.message');
         questionSectionDiv.style.display = 'none';
         welcomeMessage.style.display = 'none';
 
-        console.log("question-section and welcome message hidden.");
-
         // --- Show the Success Message Element ---
         const successMessageDiv = document.getElementById('success-message');
         successMessageDiv.style.display = 'block'; // Make the success message visible
 
-        console.log("Success message displayed.");
-
         // --- Hide the Success Message after a delay (e.g., 3 seconds) ---
         setTimeout(() => {
             successMessageDiv.style.display = 'none'; // Hide the success message again
-            console.log("Success message hidden after delay.");
         }, 60000); // Hide after 60 seconds
 
-        console.log("Inside setTimeout in transmitAnimation - after showing success message and setting hide timeout");
         // alert("Successful transmission!"); // Removed alert
     }, 2050);
-
-    console.log("transmitAnimation() function ending (Function exit)");
 }
     
     // Generate floating romantic hearts.
