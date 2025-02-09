@@ -6,6 +6,29 @@
   <title>Galactic Encounter</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+
+.message {
+    font-family: 'Poppins', sans-serif; /* Custom font */
+    font-size: 24px; /* Adjust size */
+    color: #64b7ce; /* Soft pinkish-red */
+    text-shadow: 2px 2px 5px rgba(255, 107, 129, 0.6); /* Glow effect */
+    opacity: 0; /* Start hidden */
+    animation: fadeIn 1.5s ease-in-out forwards, bounce 1.5s infinite alternate ease-in-out;
+}
+
+/* Fade-in Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Bounce Animation */
+@keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-5px); }
+}
+
 
     body {
       font-family: 'Orbitron', sans-serif;
@@ -50,7 +73,7 @@
 /* Left and right positioning */
 .heart-left {
     background: radial-gradient(circle, #ff1414, #ffc669);
-  left: 4%;
+  left: 5%;
   top: 10%;
   transform: translateY(-50%);
 }
@@ -177,8 +200,9 @@
 
     /* Main content styling */
     .question-section {
+      margin-top: 20px; 
       text-align: center;
-      background: rgba(0, 255, 255, 0.1);
+      background: rgba(15, 123, 144, 0.081);
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0px 4px 8px rgba(0, 255, 255, 0.3);
@@ -259,7 +283,7 @@
     .transmission-star {
       position: absolute;
       font-size: 2em;
-      color: #ffff00;
+      color: #f5f508;
       text-shadow: 0 0 10px #ffff00;
       z-index: 100;
     }
@@ -276,9 +300,9 @@
     }
     @keyframes enhancedColorCycle {
       0% { background: #00ffff; filter: drop-shadow(0 0 8px #00ffff); } /* Cyan */
-      33% { background: #100876; filter: drop-shadow(0 0 8px #ccffff); } /* Light Cyan */
-      66% { background: #ffffff; filter: drop-shadow(0 0 8px #ffffff); } /* White */
-      100% { background: #00ffff; filter: drop-shadow(0 0 8px #00ffff); } /* Back to Cyan */
+      33% { background: #d0cfdc; filter: drop-shadow(0 0 8px #70086b); } /* Light Cyan */
+      66% { background: #515056; filter: drop-shadow(0 0 8px #25de1f); } /* White */
+      100% { background: #00ffff; filter: drop-shadow(0 0 8px #d1b12e); } /* Back to Cyan */
     }
   </style>
       <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
@@ -293,15 +317,17 @@
   <div class="orb orb-saturn">
     <div class="ring"></div>
   </div>
-  <div class="heart heart-left">❤️ U</div>
-  <div class="heart heart-right">K ❤️</div>
+  <div class="heart heart-left">U</div>
+  <div class="heart heart-right">K</div>
   
 
   <div class="romantic-hearts"></div>
 
+ <div class="message">Hey there, Pookie! ✨</div>
+
+
+
   <div class="question-section" id="question-section">
-    <div id="message-1" class="message">Hey there, Pookie! ✨</div>
-    <div id="message-2" class="message">Commencing intergalactic transmission... 🚀</div>
     <form>
         <p>Share your preferred method to rendezvous among the stars.</p>
         <label><input type="radio" name="contact" value="Phone number" required> Stellar Call (Phone Number)</label>
@@ -501,18 +527,19 @@
       document.body.appendChild(star);
       
       // Animate the star along the heart-shaped path over 2000ms.
-      animateStarAlongHeartPath(start, mid, cp_left, cp_right, end, 2000, star);
+      animateStarAlongHeartPath(start, mid, cp_left, cp_right, end, 3000, star);
       
       setTimeout(() => {
        // star.remove();
       //  document.querySelectorAll('.trail-dot').forEach(dot => dot.remove());
         console.log("Inside setTimeout in transmitAnimation - before showing success message");
 
-        // --- Hide the question-section ---
         const questionSectionDiv = document.getElementById('question-section');
-        questionSectionDiv.style.display = 'none'; // Hide the question section
+        const welcomeMessage = document.querySelector('.message');
+        questionSectionDiv.style.display = 'none';
+        welcomeMessage.style.display = 'none';
 
-        console.log("question-section hidden.");
+        console.log("question-section and welcome message hidden.");
 
         // --- Show the Success Message Element ---
         const successMessageDiv = document.getElementById('success-message');
