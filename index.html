@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galactic Encounter</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(to bottom, #111115, #000000) !important;
+      color: #00eaff;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      z-index: 0;
+    }
+
+    /* Responsive heart containers */
+    .heart {
+      position: fixed;
+      width: min(90px, 20vw);
+      height: min(90px, 20vw);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1em, 4vw, 2em);
+      font-weight: bold;
+      color: white;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      border-radius: 50%;
+      box-shadow: 0 0 15px rgba(158, 154, 154, 0.9);
+      animation: heartbeat 1.2s infinite;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: translateY(-50%) scale(1); }
+      50% { transform: translateY(-50%) scale(1.1); }
+    }
+
+    .heart-left {
+      background: radial-gradient(circle, #ff1414, #ffc669);
+      left: max(5%, 10px);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .heart-right {
+      background: radial-gradient(circle, #14fff3, #7369ff);
+      right: max(5%, 10px);
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    /* Spaceship container */
+    .spaceship-container {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Enhanced trail dots */
+    .trail-dot {
+      position: absolute;
+      width: clamp(3px, 1vw, 8px);
+      height: clamp(3px, 1vw, 8px);
+      border-radius: 50%;
+      background: #00ffff;
+      filter: drop-shadow(0 0 12px #00ffff);
+      opacity: 0;
+      animation: 
+        enhancedColorCycle 2s linear infinite,
+        trailFade 1.5s ease-out forwards;
+    }
+
+    @keyframes trailFade {
+      0% { opacity: 0; transform: scale(0); }
+      20% { opacity: 1; transform: scale(1.2); }
+      40% { transform: scale(1); }
+      100% { opacity: 1; }
+    }
+
+    @keyframes enhancedColorCycle {
+      0% { background: #00ffff; filter: drop-shadow(0 0 12px #00ffff); }
+      25% { background: #ff69b4; filter: drop-shadow(0 0 12px #ff69b4); }
+      50% { background: #ff1493; filter: drop-shadow(0 0 12px #ff1493); }
+      75% { background: #00ff00; filter: drop-shadow(0 0 12px #00ff00); }
+      100% { background: #00ffff; filter: drop-shadow(0 0 12px #00ffff); }
+    }
+
+    /* Transmission star */
+    .transmission-star {
+      position: absolute;
+      font-size: clamp(1.5em, 4vw, 2em);
+      color: #ffff00;
+      text-shadow: 0 0 10px #ffff00;
+      z-index: 100;
+    }
+
+    /* Glowing orbs / planets */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      animation: pulse 3s infinite alternate;
+      z-index: -2;
+      width: clamp(30px, 8vw, 80px);
+      height: clamp(30px, 8vw, 80px);
+      box-shadow: 0 0 15px rgba(0, 238, 255, 0.7);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.9; }
+      100% { transform: scale(1.1); opacity: 1; }
+    }
+
+    .orb.orb1 {
+      background: radial-gradient(circle, #1e90ff, #00008b);
+      top: 10%;
+      left: 10%;
+    }
+
+    .orb.orb2 {
+      background: radial-gradient(circle, #ff4500, #8b0000);
+      bottom: 20%;
+      right: 15%;
+    }
+
+    .orb.orb3 {
+      background: radial-gradient(circle, #32cd32, #006400);
+      top: 20%;
+      right: 10%;
+    }
+
+    /* Saturn-like planet */
+    .orb.orb-saturn {
+      background: radial-gradient(circle, #ffcc00, #cc9900);
+      bottom: 15%;
+      left: 20%;
+    }
+
+    .orb.orb-saturn .ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 20%;
+      background: rgba(255, 255, 255, 0.8);
+      transform: translate(-50%, -50%);
+      border-radius: 10px;
+      animation: rotateRing 4s linear infinite;
+    }
+
+    @keyframes rotateRing {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    /* Floating hearts animation */
+    .spaceship-star {
+      position: absolute;
+      font-size: clamp(1em, 3vw, 1.5em);
+      opacity: 1;
+      animation: fly 4s linear forwards;
+    }
+
+    @keyframes fly {
+      0% { transform: translate(0, 0); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+    }
+
+    /* Question section */
+    .question-section {
+      width: min(90%, 500px);
+      margin: 20px auto;
+      text-align: center;
+      background: rgba(0, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 255, 255, 0.3);
+      position: relative;
+      z-index: 10;
+    }
+
+    .message {
+      font-size: clamp(1em, 3vw, 1.2em);
+      margin: 10px 0;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s, transform 0.5s;
+    }
+
+    .message.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Form elements */
+    form {
+      margin-top: 20px;
+    }
+
+    form label {
+      display: block;
+      margin: 15px 0;
+      font-size: clamp(0.9em, 3vw, 1.2em);
+      cursor: pointer;
+      padding: 10px;
+      background: rgba(0, 255, 255, 0.05);
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+
+    form label:hover {
+      background: rgba(0, 255, 255, 0.1);
+    }
+
+    #input-container {
+      display: none;
+      margin-top: 15px;
+    }
+
+    input[type="text"] {
+      width: min(80%, 300px);
+      padding: 12px;
+      font-size: clamp(0.9em, 3vw, 1em);
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid cyan;
+      color: cyan;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: clamp(10px, 3vw, 12px) clamp(20px, 5vw, 24px);
+      font-size: clamp(1em, 3vw, 1.3em);
+      color: black;
+      background-color: cyan;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.3s ease, background 0.3s;
+      margin-top: 20px;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      background: #00aaff;
+    }
+
+    /* Success message */
+    #success-message {
+      display: none;
+      width: min(90%, 500px);
+      margin: 20px auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #success-message h3 {
+      color: #00ff80;
+      font-size: clamp(1.2em, 4vw, 1.5em);
+      margin-bottom: 10px;
+    }
+
+    #success-message p {
+      color: #00eaff;
+      font-size: clamp(0.9em, 3vw, 1em);
+    }
+
+    /* Romantic hearts */
+    .romantic-hearts {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .romantic-hearts span {
+      position: absolute;
+      font-size: clamp(1em, 3vw, 1.5em);
+      color: #ff69b4;
+      opacity: 0.8;
+      animation: heartFloat 5s linear infinite;
+    }
+
+    @keyframes heartFloat {
+      0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: translateY(-20vh) scale(1); opacity: 0; }
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+</head>
+<body>
+  <div class="spaceship-container"></div>
+
+  <!-- Glowing orbs / planets -->
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div class="orb orb-saturn">
+    <div class="ring"></div>
+  </div>
+  <div class="heart heart-left">❤️ U</div>
+  <div class="heart heart-right">K ❤️</div>
+
+  <div class="romantic-hearts"></div>
+
+  <div class="question-section" id="question-section">
+    <div id="message-1" class="message">Hey there, Pookie! ✨</div>
+    <div id="message-2" class="message">Commencing intergalactic transmission... 🚀</div>
+    <form>
+      <p>Share your preferred method to rendezvous among the stars.</p>
+      <label><input type="radio" name="contact" value="Phone number" required> Stellar Call (Phone Number)</label>
+      <label><input type="radio" name="contact" value="Snapchat ID"> Cosmic Chat (Snapchat)</label>
+      <label><input type="radio" name="contact" value="Instagram ID"> Galactic Glance (Instagram)</label>
+      <div id="input-container">
+        <input type="text" id="contact-detail" placeholder="Enter your transmission details">
+      </div>
+      <button type="button" id="submit-button" onclick="submitForm()">Transmit</button>
+    </form>
+  </div>
+
+  <div id="success-message">
+    <h3>Transmission Successful! ✅</h3>
+    <p>Your contact information has been sent among the stars. ✨</p>
+  </div>
+
+  <script>
+    emailjs.init("UUxUCWkFJBKLGkOPf");
+
+    function revealElements() {
+      const message1 = document.getElementById('message-1');
+      message1.classList.add('visible');
+
+      setTimeout(() => {
+        const message2 = document.getElementById('message-2');
+        message2.classList.add('visible');
+      }, 2000);
+
+      setTimeout(() => {
+        const inputContainer = document.getElementById('input-container');
+        inputContainer.style.display = 'block';
+      }, 4000);
+    }
+
+    document.querySelectorAll('input[type=radio]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        document.getElementById('input-container').style.display = 'block';
+      });
+    });
+
+    function quadraticBezier(P0, CP, P1, t) {
+      return {
+        x: Math.pow(1-t, 2)*P0.x + 2*(1-t)*t*CP.x + Math.pow(t,2)*P1.x,
+        y: Math.pow(1-t, 2)*P0.y + 2*(1-t)*t*CP.y + Math.pow(t,2)*P1.y
+      };
+    }
+
+    function animateStarAlongHeartPath(start, mid, cp_left, cp_right, end, duration, star) {
+      const startTime = performance.now();
+      function step(now) {
+        let t = (now - startTime) / duration;
+        if(t > 1) t = 1;
+        let pos;
+        if(t <= 0.5) {
+          const tPrime = t / 0.5;
+          pos = quadraticBezier(start, cp_left, mid, tPrime);
+        } else {
+          const tPrime = (t - 0.5) / 0.5;
+          pos = quadraticBezier(mid, cp_right, end, tPrime);
+        }
+        star.style.left = pos.x + 'px';
+        star.style.top = pos.y + 'px';
+        if(t < 1) {
+          requestAnimationFrame(step);
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    function submitForm() {
+      const contactType = document.querySelector('input[name="contact"]:checked');
+      const contactDetail = document.getElementById('contact-detail').value;
+
+      if (!contactType || !contactDetail) {
+        alert('Please select a contact method and enter the details!');
+        return;
+      }
+
+      emailjs.send('service_lnaepwf', 'template_5w50wk2', {
+        contact_type: contactType.value,
+        contact_detail: contactDetail
+      })
+      
+    .then(response => {
+        console.log("EmailJS .then() block entered"); // Keep this log
+        console.log("EmailJS Success:", response); // Keep this log
+        console.log("About to call transmitAnimation() from .then()"); // ADD THIS LOG - Before transmitAnimation()
+        transmitAnimation();
+        console.log("transmitAnimation() called from .then()"); // ADD THIS LOG - After transmitAnimation()
+        console.log('Success (inside .then()):', response);
+    })
+    .catch(error => {
+        console.log("EmailJS .catch() block entered"); // Keep this log
+        console.error("EmailJS Error:", error);
+        console.error('Error (inside .catch()):', error);
+        alert('Oops! Something went wrong. Please try again.');
+    });
+
+    console.log("Function submitForm() execution continuing after emailjs.send..."); // ADD THIS LOG - After emailjs.send
+}
+
+    
+    // Transmission animation:
+    // Launch a glowing star from the edge of the left orb ("U") to the edge of the right orb ("K"),
+    // and create a dotted, glowing trail that follows a heart-shaped path.
+    function transmitAnimation() {
+        console.log("transmitAnimation() function called! (Function entry)");
+      const leftOrb = document.querySelector('.heart-left');
+      const rightOrb = document.querySelector('.heart-right');
+      const leftRect = leftOrb.getBoundingClientRect();
+      const rightRect = rightOrb.getBoundingClientRect();
+      
+      // Calculate centers.
+      const leftCenter = { x: leftRect.left + leftRect.width/2, y: leftRect.top + leftRect.height/2 };
+      const rightCenter = { x: rightRect.left + rightRect.width/2, y: rightRect.top + rightRect.height/2 };
+      
+      // Compute unit vector from left to right.
+      const dx = rightCenter.x - leftCenter.x;
+      const dy = rightCenter.y - leftCenter.y;
+      const distance = Math.sqrt(dx*dx + dy*dy);
+      const ux = dx / distance;
+      const uy = dy / distance;
+      
+      // Define start and end points on the edges of the orbs.
+      const start = { x: leftCenter.x + (leftRect.width/2) * ux,
+                      y: leftCenter.y + (leftRect.height/2) * uy };
+      const end = { x: rightCenter.x - (rightRect.width/2) * ux,
+                    y: rightCenter.y - (rightRect.height/2) * uy };
+      
+      // Define a "bottom" point for the heart shape.
+      const midX = (start.x + end.x) / 2;
+      const bottomY = start.y + 80; // offset downward; adjust as needed
+      const mid = { x: midX, y: bottomY };
+      
+      // Control points for quadratic curves (to form a heart shape)
+      const cp_left = { x: start.x - 50, y: (start.y + bottomY) / 2 };
+      const cp_right = { x: end.x + 50, y: (end.y + bottomY) / 2 };
+      
+      // --- Create dotted, glowing trail along the heart-shaped path ---
+      const totalDots = 37;
+      // We'll sample 8 points on the left segment (from start to mid) and 7 on the right.
+      const dots = [];
+      for (let i = 0; i < 8; i++) {
+        const t = i / 7; // t in [0,1]
+        const point = quadraticBezier(start, cp_left, mid, t);
+        dots.push(point);
+      }
+      for (let i = 1; i < 8; i++) { // avoid duplicating the mid point
+        const t = i / 7;
+        const point = quadraticBezier(mid, cp_right, end, t);
+        dots.push(point);
+      }
+      // Create and place trail dots.
+      dots.forEach((pt, index) => {
+        const dot = document.createElement('div');
+        dot.classList.add('trail-dot');
+        dot.style.left = pt.x + 'px';
+        dot.style.top = pt.y + 'px';
+
+        // --- VERY Drastic Size Variation for Testing ---
+        const size = Math.random() * 10 + 2; // Size between 2px and 12px - very wide range
+        dot.style.width = size + 'px';
+        dot.style.height = size + 'px';
+        dot.style.opacity = Math.random() * 0.5 + 0.5;
+        // Stagger the animation delay for a sequential glowing effect.
+        dot.style.animationDelay = (index * 0.1) + 's';
+        document.body.appendChild(dot);
+      });
+      
+      // Create transmission star element.
+      const star = document.createElement('div');
+      star.classList.add('transmission-star');
+      star.innerHTML = '⭐';
+      star.style.left = start.x + 'px';
+      star.style.top = start.y + 'px';
+      document.body.appendChild(star);
+      
+      // Animate the star along the heart-shaped path over 2000ms.
+      animateStarAlongHeartPath(start, mid, cp_left, cp_right, end, 2000, star);
+      
+      setTimeout(() => {
+       // star.remove();
+      //  document.querySelectorAll('.trail-dot').forEach(dot => dot.remove());
+        console.log("Inside setTimeout in transmitAnimation - before showing success message");
+
+        // --- Hide the question-section ---
+        const questionSectionDiv = document.getElementById('question-section');
+        questionSectionDiv.style.display = 'none'; // Hide the question section
+
+        console.log("question-section hidden.");
+
+        // --- Show the Success Message Element ---
+        const successMessageDiv = document.getElementById('success-message');
+        successMessageDiv.style.display = 'block'; // Make the success message visible
+
+        console.log("Success message displayed.");
+
+        // --- Hide the Success Message after a delay (e.g., 3 seconds) ---
+        setTimeout(() => {
+            successMessageDiv.style.display = 'none'; // Hide the success message again
+            console.log("Success message hidden after delay.");
+        }, 60000); // Hide after 60 seconds
+
+        console.log("Inside setTimeout in transmitAnimation - after showing success message and setting hide timeout");
+        // alert("Successful transmission!"); // Removed alert
+    }, 2050);
+
+    console.log("transmitAnimation() function ending (Function exit)");
+}
+    
+    // Generate floating romantic hearts.
+    function createRomanticHearts() {
+      const container = document.querySelector('.romantic-hearts');
+      for (let i = 0; i < 5; i++) {
+        let heart = document.createElement('span');
+        heart.innerHTML = '❤️';
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.top = Math.random() * 100 + 'vh';
+        heart.style.fontSize = (Math.random() * 1 + 1) + 'em';
+        heart.style.animationDuration = Math.random() * 3 + 4 + 's';
+        container.appendChild(heart);
+        setTimeout(() => heart.remove(), 6000);
+      }
+    }
+    setInterval(createRomanticHearts, 1500);
+
+    // Generate drifting floating hearts.
+    function createSpaceshipHeart() {
+      let heart = document.createElement('span');
+      heart.classList.add('spaceship-star');
+      heart.innerHTML = '❤️';
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.top = Math.random() * 100 + 'vh';
+      let angle = Math.random() * 360;
+      let distance = Math.random() * 20 + 10;
+      let dx = distance * Math.cos(angle * Math.PI / 180);
+      let dy = distance * Math.sin(angle * Math.PI / 180);
+      heart.style.setProperty('--dx', dx + 'vw');
+      heart.style.setProperty('--dy', dy + 'vh');
+      document.querySelector('.spaceship-container').appendChild(heart);
+      setTimeout(() => heart.remove(), 4000);
+    }
+    setInterval(createSpaceshipHeart, 500);
+    window.addEventListener('DOMContentLoaded', () => {
+  revealElements();
+});
+  </script>
+</body>
+</html>
