@@ -133,6 +133,10 @@
   .cta.loading .cta-txt-ok{display:none}
   @keyframes spin{to{transform:rotate(360deg)}}
   .foot{margin-top:18px;text-align:center;color:#5f6483;font-size:12px}
+  .hint{display:none;margin:14px auto 0;text-align:center;font-size:12px;line-height:1.6;color:#8d93b5;max-width:280px}
+  .hint.show{display:block;animation:rise .5s ease}
+  .hint b{color:#ffd0e6;font-weight:600}
+  .hint .spin{display:inline-block;font-style:normal;color:#b07cff;margin-right:4px;animation:beat 1.8s ease-in-out infinite}
   /* reveal on load */
   .rv{opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.3,1)}
   .ready .rv{opacity:1;transform:none}
@@ -167,14 +171,22 @@
   .sp-top .sp-pct{font-variant-numeric:tabular-nums;color:#8d93b5;font-size:12px}
   .sp-track{margin-top:11px;height:5px;border-radius:99px;background:rgba(255,255,255,.07);
     border:1px solid rgba(255,255,255,.05);overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
-  .sp-fill{height:100%;width:0%;border-radius:inherit;
+  .sp-fill{position:relative;height:100%;width:0%;border-radius:inherit;overflow:hidden;
     background:linear-gradient(90deg,#ff5f9e,#b07cff 60%,#63c8ff);
     box-shadow:0 0 14px rgba(255,120,190,.6)}
+  .sp-fill::after{content:"";position:absolute;top:0;bottom:0;left:0;width:34%;border-radius:inherit;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.38),transparent);
+    transform:translateX(-120%);animation:sheen 2.6s ease-in-out infinite}
+  @keyframes sheen{0%{transform:translateX(-120%)}60%,100%{transform:translateX(420%)}}
   .hold .sp-fill{animation:glowPulse 1.5s ease-in-out infinite}
   @keyframes glowPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.5)}}
   .blast{position:fixed;z-index:28;width:34px;height:34px;border-radius:50%;pointer-events:none;
     border:1px solid rgba(255,255,255,.75);box-shadow:0 0 18px rgba(255,200,230,.8);animation:blast .7s ease-out forwards}
   @keyframes blast{from{opacity:1;transform:translate(-50%,-50%) scale(.3)}to{opacity:0;transform:translate(-50%,-50%) scale(3.4)}}
+  .dring{position:fixed;z-index:28;width:56px;height:56px;border-radius:50%;pointer-events:none;
+    border:1px solid rgba(130,195,255,.65);box-shadow:0 0 22px rgba(120,190,255,.45);animation:blast 1s ease-out forwards}
+  .lring{position:fixed;z-index:28;width:42px;height:42px;border-radius:50%;pointer-events:none;
+    border:1px solid rgba(255,150,200,.6);box-shadow:0 0 20px rgba(255,110,170,.4);animation:blast 1.15s ease-out forwards}
   /* ---------- success ---------- */
   .success{display:none;position:fixed;inset:0;z-index:60;place-items:center;padding:20px;
     background:rgba(5,5,14,.84);backdrop-filter:blur(14px)}
@@ -286,6 +298,7 @@
     </button>
   </form>
 
+  <p class="hint" id="hint"><i class="spin" aria-hidden="true">✦</i>Send it, then stay a few seconds — <b>watch your note fly</b> across to Keshav</p>
   <p class="foot rv d5">Straight to Keshav's inbox — nothing is stored</p>
 </main>
 
@@ -335,6 +348,7 @@
   const fill=document.getElementById('spFill');
   const pct=document.getElementById('spPct');
   const txt=document.getElementById('spTxt');
+  const hint=document.getElementById('hint');
   const ship=document.getElementById('ship');
   const beam=document.getElementById('beam');
   const beamHalo=document.getElementById('beamHalo');
@@ -353,19 +367,30 @@
     label.textContent=o.querySelector('.opt-copy b').textContent;
     detail.classList.add('show');
     err.classList.remove('show');
+    maybeHint();
     setTimeout(()=>input.focus(),120);
   }));
+  input.addEventListener('input',maybeHint);
+
+  function maybeHint(){
+    const sel=document.querySelector('input[name="contact"]:checked');
+    const raw=input.value.trim();
+    const show=!!(sel&&raw&&VALID[sel.value](raw)&&!err.classList.contains('show')&&!document.body.classList.contains('sending'));
+    hint.classList.toggle('show',show);
+  }
 
   function setErr(msg){
-    if(!msg){err.classList.remove('show');err.textContent="";return}
+    if(!msg){err.classList.remove('show');err.textContent="";maybeHint();return}
     err.textContent=msg;err.classList.add('show');
+    maybeHint();
     input.closest('.input-wrap').classList.remove('shake');void input.closest('.input-wrap').offsetWidth;
     input.closest('.input-wrap').classList.add('shake');
   }
 
   /* ---------- live send sequence ---------- */
+  const TRAVEL=7600;   // full flight time (ms): 0 → planet B
+  const LAUNCH=650;    // beat of anticipation on planet A before liftoff (ms)
   const easeIO=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-  const easeOut=t=>1-Math.pow(1-t,3);
   let sendState=null, sendRaf=null;
 
   function beamPath(p1,p2,cx,cy){return `M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`}
@@ -383,61 +408,86 @@
     beamHalo.setAttribute('d',d);
     beamCore.setAttribute('d',d);
     ship.style.left=p1.x+'px';ship.style.top=p1.y+'px';
-    sendState={p1,p2,cx,cy,resolved:false,resAt:0,p:0,lastSpark:0,t0:performance.now()};
+    sendState={p1,p2,cx,cy,resolved:false,p:0,lastSpark:0,t0:performance.now(),departed:false,arrived:false,waited:false,done:false};
     txt.textContent='Preparing your note…';pct.textContent='0%';fill.style.width='0%';
     panel.classList.remove('hold');
     cancelAnimationFrame(sendRaf);
     sendRaf=requestAnimationFrame(sendLoop);
   }
 
+  function statusCopy(p){
+    if(p<=0)return 'Preparing your note…';
+    if(p<.15)return 'Leaving your planet…';
+    if(p<.4)return 'Travelling across the cosmos…';
+    if(p<.68)return 'Halfway — cruising past the stars…';
+    if(p<.93)return 'Keshav\'s planet is in sight…';
+    return 'Docking — almost there…';
+  }
+
+  function ring(x,y,cls){
+    const el=document.createElement('span');el.className=cls;
+    el.style.left=x+'px';el.style.top=y+'px';
+    document.body.appendChild(el);setTimeout(()=>el.remove(),1600);
+  }
+
   function sendLoop(t){
-    const st=sendState;if(!st)return;
-    if(!st.resolved){
-      st.p=Math.min(.9, easeIO(Math.min(1,(t-st.t0)/2600)));
-    }else{
-      const from=st.p, k=easeOut(Math.max(0,Math.min(1,(t-st.resAt)/520)));
-      st.p=Math.min(1,from+(1-from)*k);
-    }
-    /* move ship + sparks */
-    const {p1,p2,cx,cy,p}=st;
+    const st=sendState;if(!st||st.done)return;
+    /* slow eased cruise: brief pause on planet A, then a long glide across the screen */
+    const u=Math.min(1,Math.max(0,(t-st.t0-LAUNCH)/(TRAVEL-LAUNCH)));
+    st.p=u===0?0:easeIO(u);
+    const {p1,p2,cx,cy}=st,p=st.p;
     const iu=1-p;
     const x=iu*iu*p1.x+2*iu*p*cx+p*p*p2.x;
     const y=iu*iu*p1.y+2*iu*p*cy+p*p*p2.y;
     ship.style.left=x+'px';ship.style.top=y+'px';
-    if(p<1&&!st.resolved&&t-st.lastSpark>110){
+
+    /* arrival at planet B */
+    if(p>=1){
+      st.p=1;st.arrived=true;
+      pct.textContent='100%';fill.style.width='100%';
+      if(st.resolved){finishSend(st);return}
+      if(!st.waited){st.waited=true;panel.classList.add('hold');txt.textContent='Waiting for delivery…'}
+      sendRaf=requestAnimationFrame(sendLoop);
+      return;
+    }
+
+    /* gentle dust trail behind the ship */
+    if(t-st.lastSpark>170){
       st.lastSpark=t;
       const tw=document.createElement('span');tw.className='tw';
-      tw.style.left=(x+8)+'px';tw.style.top=(y+6)+'px';
-      tw.style.background=Math.random()>.5?'rgba(255,150,200,.9)':'rgba(180,160,255,.9)';
-      tw.style.boxShadow='0 0 8px rgba(255,170,220,.8)';
-      document.body.appendChild(tw);setTimeout(()=>tw.remove(),900);
+      tw.style.left=(x-6)+'px';tw.style.top=(y+5)+'px';
+      tw.style.background=Math.random()>.5?'rgba(255,160,205,.55)':'rgba(185,170,255,.55)';
+      tw.style.boxShadow='0 0 9px rgba(255,180,225,.55)';
+      tw.style.width='5px';tw.style.height='5px';
+      document.body.appendChild(tw);setTimeout(()=>tw.remove(),1000);
     }
-    /* ui */
-    const perc=Math.round(p*100);
+    /* soft ring as the ship leaves planet A */
+    if(!st.departed&&p>.04){st.departed=true;ring(p1.x,p1.y,'lring')}
+
+    /* progress ui */
+    const perc=Math.min(99,Math.round(p*100));
     pct.textContent=perc+'%';
     fill.style.width=perc+'%';
-    if(p<.12)txt.textContent='Preparing your note…';
-    else if(p<.5)txt.textContent='Travelling across the cosmos…';
-    else if(p<.88)txt.textContent='Almost there…';
-    if(!st.resolved&&p>=.88){txt.textContent='Waiting for delivery…';panel.classList.add('hold')}
-
-    if(st.resolved&&st.p>=1){finishSend(st);return}
+    const s=statusCopy(p);
+    if(txt.textContent!==s)txt.textContent=s;
     sendRaf=requestAnimationFrame(sendLoop);
   }
 
   function finishSend(st){
+    if(st.done)return;st.done=true;
     cancelAnimationFrame(sendRaf);sendState=null;
-    txt.textContent='Delivered ♥';pct.textContent='100%';fill.style.width='100%';
     panel.classList.remove('hold');
+    txt.textContent='Delivered ♥';pct.textContent='100%';fill.style.width='100%';
     const b=planetB.getBoundingClientRect();
-    const bx=b.left+b.width/2,by=b.top+b.height/2;
-    const bl=document.createElement('span');bl.className='blast';
-    bl.style.left=bx+'px';bl.style.top=by+'px';
-    document.body.appendChild(bl);setTimeout(()=>bl.remove(),800);
+    ring(b.left+b.width/2,b.top+b.height/2,'blast');
     const sc=ship.querySelector('.ship-core');
-    sc.style.transition='opacity .3s,transform .3s';
-    sc.style.opacity='0';sc.style.transform='scale(1.55)';
-    setTimeout(()=>showSuccess(),650);
+    setTimeout(()=>{
+      sc.style.transition='opacity .45s,transform .45s';
+      sc.style.opacity='0';sc.style.transform='scale(1.65)';
+      const bb=planetB.getBoundingClientRect();
+      ring(bb.left+bb.width/2,bb.top+bb.height/2,'dring');
+    },420);
+    setTimeout(showSuccess,1050);
   }
 
   form.addEventListener('submit',e=>{
@@ -449,12 +499,14 @@
     if(!cleaned){setErr("Now add your details in the box above 🙂");return}
     if(!VALID[sel.value](raw)){setErr(ERRS[sel.value]);return}
     setErr(false);
+    hint.classList.remove('show');
     btn.classList.add('loading');btn.disabled=true;btn.setAttribute('aria-busy','true');
     if(!reduced)beginSend();
     emailjs.send(SERVICE,TEMPLATE,{contact_type:sel.value,contact_detail:cleaned})
       .then(()=>{
-        if(sendState){sendState.resolved=true;sendState.resAt=Math.max(performance.now(),sendState.t0+1800)}
-        else showSuccess();
+        const st=sendState;
+        if(st&&!st.done){st.resolved=true;if(st.arrived)finishSend(st)}
+        else if(!st)showSuccess();
       })
       .catch(error=>{
         console.error('Email error:',error);
@@ -469,6 +521,7 @@
   /* ---------- success ---------- */
   const success=document.getElementById('success');
   function showSuccess(){
+    if(success.classList.contains('show'))return;
     document.body.classList.remove('sending');
     panel.style.opacity='0';
     success.classList.add('show');
